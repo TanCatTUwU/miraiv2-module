@@ -2,3 +2,6 @@
 A shitty module using Pterodactyl API to
 - Start a server (only if it is offline)
 - Send information about your server (cpu usage, online/offline,...)
+## Dependency
+- MiraiV2
+- Axios `npm i axios`
