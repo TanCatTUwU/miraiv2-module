@@ -1,7 +1,7 @@
 var server_id = "d5073e6f" //change this to your server id / Thay ID của server vào đây
 var ptero_token = "insert ptero api token here / đặt pterodactyl api token vào đây"
 var panel_url = "console.ataraxarealm.xyz" // change this to your panel url / Thay url của panel vào đây
-var cpuCount = 1.5 // replace with your cpu count on panel (although it is possible to set more if you have more, just remember that most of server software except folia run on single core, so it is recommended to leave as default)
+var cpuCount = 2 // replace with your cpu count on panel (although it is possible to set more if you have more, just remember that most of server software except folia run on single core, so it is recommended to leave as default)
 var minceraftIP = "ataraxarealm.xyz" // replace with your server IP
 const axios = require('axios');
 axios.defaults.withCredentials = true;
