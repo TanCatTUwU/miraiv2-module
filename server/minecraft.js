@@ -7,7 +7,7 @@ const axios = require('axios');
 axios.defaults.withCredentials = true;
 module.exports.config = {
     name: "server",
-    version: "1.0.0",
+    version: "1.1.7",
     hasPermssion: 0,
     credits: "Hifumi",   // Tôn trọng người làm bằng cách không thay credit
     description: "Xem thông tin và bật server nếu nó tắt",
