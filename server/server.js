@@ -1,16 +1,17 @@
 var server_id = "d5073e6f" //change this to your server id / Thay ID của server vào đây
-var ptero_token = " Put Pterodactyl API token here / Thả Pterodactyl API token vào đây"
+var ptero_token = "replace with your ptero api token"
 var panel_url = "console.ataraxarealm.xyz" // change this to your panel url / Thay url của panel vào đây
+var cpuCount = 2 // replace with your cpu count on panel (although it is possible to set more if you have more, just remember that most of server software except folia run on single core, so it is recommended to leave as default)
 const axios = require('axios');
 axios.defaults.withCredentials = true;
 module.exports.config = {
     name: "server",
-    version: "1.0.0",
+    version: "1.5.4",
     hasPermssion: 0,
     credits: "Hifumi",   // Tôn trọng người làm bằng cách không thay credit
     description: "Xem thông tin và bật server nếu nó tắt",
     commandCategory: "Tiện ích",
-    usages: "-stat | -power",
+    usages: "stat | power",
     cooldowns: 5,
     dependencies: {
         "axios": ""
@@ -66,7 +67,7 @@ switch (args[0]) {
 		    break
 		}
 		case "stat": {
-		    const auth = {
+	    	const auth = {
                 url: `/${server_id}/resources`,
                 method: 'get',
                 baseURL: `https://${panel_url}/api/client/servers`,
@@ -77,33 +78,54 @@ switch (args[0]) {
                 }
             }
             axios(auth).then(res =>{
-            const power = res.data.attributes.current_state
-            switch (power) {
-                case 'running':
-                    var state = "[🟢] Status: Đang chạy" // running
-                    break
-                case 'starting':
-                    var state = "[🟠] Status: Đang khởi động" // starting
-                    break
-                case 'offline':
-                    var state = "[🔴] Status: Đã tắt" // powered off
-                    break
-                default:
-                    var state = "[🟠] Status: Đang tắt" // line 62 column 110
-                    break
-            };
-            var ram = ((res.data.attributes.resources.memory_bytes) / 1073741824).toFixed(2)
-            var cpu = ((res.data.attributes.resources.cpu_absolute) / 6).toFixed(2) // replace 6 with your cpu core count (mine is 600% max so its 6 thread)
-            var disk = ((res.data.attributes.resources.disk_bytes) / 1073741824).toFixed(2)
-            var upt = ((res.data.attributes.resources.uptime) / 3600000).toFixed(2) // default is hour, but you can change it
-            var down = ((res.data.attributes.resources.network_rx_bytes) / 1073741824).toFixed(2)
-            var up = ((res.data.attributes.resources.network_tx_bytes) / 1073741824).toFixed(2)
-            a(`[📟]━━[ Thông tin về server ]━━[📟]\n[🌐] IP: ataraxarealm.xyz | Port MCBE: 19132\n${state}\n[💾] RAM: ${ram} GB/14 GB\n[🖥️] CPU: ${cpu}%\n[🗂️] Disk: ${disk} GB/600 GB\n[🔽] Downloaded: ${down} GB\n[🔼] Uploaded: ${up} GB\n[⏰] Uptime: ${upt} giờ`); // Too lazy to make Max usage variable
+                const power = res.data.attributes.current_state
+                    switch (power) {
+                        case 'running':
+                            var state = "[🟢] Status: Đang chạy" // running
+                            break
+                        case 'starting':
+                            var state = "[🟠] Status: Đang khởi động" // starting
+                            break
+                        case 'offline':
+                            var state = "[🔴] Status: Đã tắt" // powered off
+                            break
+                        default:
+                            var state = "[🟠] Status: Đang tắt" // line 62 column 110
+                            break
+                };
+                    var ram = ((res.data.attributes.resources.memory_bytes) / 1073741824).toFixed(2)
+                    var cpu = ((res.data.attributes.resources.cpu_absolute) / `${cpuCount}`).toFixed(2)
+                    var disk = ((res.data.attributes.resources.disk_bytes) / 1073741824).toFixed(2)
+                    var upt = ((res.data.attributes.resources.uptime) / 3600000) // default is hour (value * 1000 * 60 * 60), but you can change it
+                    var uptHour = (Math.floor((res.data.attributes.resources.uptime) / 3600000))
+                    var min = Math.floor(upt)
+                    var uptMin = (Math.floor((upt - min) * 60))
+                    var sec = Math.floor((upt-min) * 60)
+                    var uptSec = (Math.floor((((upt-min) * 60) - sec) * 60))
+                    var down = ((res.data.attributes.resources.network_rx_bytes) / 1073741824).toFixed(2)
+                    var up = ((res.data.attributes.resources.network_tx_bytes) / 1073741824).toFixed(2)
+                    setTimeout(function() {axios.get('https://api.mcstatus.io/v2/status/java/ataraxarealm.xyz')}, 50) // ping the first time to get garbage data so the second time wont get error
+                    const authGetResources = {
+                        url: `/${server_id}`,
+                        method: 'get',
+                        baseURL: `https://${panel_url}/api/client/servers`,
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${ptero_token}`
+                        }
+                    }
+                    axios(authGetResources).then(res => {
+                        var maxRAM = ((res.data.attributes.limits.memory) / 1024).toFixed(2)
+                        var maxDisk = ((res.data.attributes.limits.disk) / 1024).toFixed(2)
+                        var location = res.data.attributes.node
+                        a(`[📟]━━[ Thông tin về server ]━━[📟]\n${state}\n[💾] RAM: ${ram}/${maxRAM} GB\n[🖥️] CPU: ${cpu}%\n[🗂️] Disk: ${disk}/${maxDisk} GB\n[🔽] Downloaded: ${down} GB\n[🔼] Uploaded: ${up} GB\n[🗺️] Nơi host: ${location}\n[⏰] Uptime: ${uptHour} giờ ${uptMin} phút ${uptSec} giây`)
+                    })
             })
-		    break
+            break
 		}
 		default: {
-		    a("[📖]━━[ Hướng dẫn sử dụng ]━━[📖]\n• ,server power - Bật server nếu nó đang tắt\n• ,server stat - Xem thông tin về server");
+		    a("[📖]━━[ Hướng dẫn sử dụng ]━━[📖]\n• ,server power - Bật server nếu nó đang tắt\n• ,server stat - Xem thông tin về server"); // how to use the command (in vietnamese)
 		    break
 		}
 	}
